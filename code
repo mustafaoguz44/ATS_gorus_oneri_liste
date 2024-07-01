@@ -1,0 +1,316 @@
+@using MEM.Areas.ATS.Data.DTOs.Admin
+@model IEnumerable<GorusOneriDto>
+
+<!-- Main content Personel Tablosu-->
+<section class="content">
+    <div class="row">
+        <section class="col-12">
+            <!-- Default box -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title"> Görüş Ve Öneriler Listesi</h3>
+
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse" 
+                                data-toggle="tooltip" title="Küçült">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <button type="button" class="btn btn-tool" data-card-widget="remove" 
+                                data-toggle="tooltip" title="Kapat">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+
+                    <div class="row justify-content-center">
+                        <h6 class="text-bold">GÖRÜŞ VE ÖNERİLER LİSTESİ</h6>
+                    </div>
+
+                    <table id="list" class="table table-hover table-striped table-bordered" 
+                           style="table-layout:auto">
+
+                        <thead>
+                            <tr class="text-center align-middle">
+                                <th>Konu</th>
+                                <th>Link</th>
+                                <th>Mesaj</th>
+                                <th>Gönderen</th>
+                                <th>Tarih</th>
+                                @*<th>Görevi</th>*@
+                                <th width="15%">İşlemler</th>
+                                <th>İşlem Durumu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null)
+                            {
+                                foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            <span class="badge @(item.Konu == "Görüş ve Öneri" ? "badge-info":"badge-danger")">@item.Konu</span>
+
+                                        </td>
+                                        <td>@item.UrlReferrer</td>
+                                        <td>
+                                            @if (@item.Mesaj.Length >= 30)
+                                            {
+                                                @:@item.Mesaj.Substring(0, 30)
+                                                <span data-toggle="popover" data-trigger="hover" data-html="true"
+                                                      data-title="Tüm Mesaj" data-content="@item.Mesaj">
+                                                    ...
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                @item.Mesaj
+                                            }
+                                        </td>
+                                        <td>
+                                            @item.CreatedBy
+                                            <br /> @item.Telefon - @item.Eposta
+                                        </td>
+                                        <td>@item.Created</td>
+                                        <td class="text-center">
+                                            <span data-toggle="popover" data-trigger="hover" data-html="true"
+                                                  data-title="Cevapla" data-content="Cevap vermek için tıklayın.">
+                                                <a data-toggle="modal" data-target="#cevapvermodal"
+                                                   data-Id="@item.Id"
+                                                   data-CreatedBy="@item.CreatedBy"
+                                                   data-Telefon="@item.Telefon.FormatTelefonForSms()"
+                                                   data-Eposta="@item.Eposta"
+                                                   class="btn btn-warning btn-sm cevapverdoldur">
+                                                    <i class="fa-regular fa-envelope-open"></i>
+                                                </a>
+                                            </span>
+                                            <span data-toggle="popover" data-trigger="hover" data-html="true"
+                                                  data-title="Gor" data-content="Mesajı Görmek için tıklayın.">
+                                                <a data-toggle="modal" data-target="#gormodal"
+                                                   data-UrlReferrer="@item.UrlReferrer"
+                                                   data-Konu="@item.Konu"
+                                                   data-Mesaj="@item.Mesaj"
+                                                   data-Created="@item.Created"
+                                                   data-CreatedBy="@item.CreatedBy-@item.Telefon-@item.Eposta"
+                                                   class="btn btn-primary btn-sm gormodalButon">
+                                                    <i class="fa-regular fa-eye"></i>
+                                                </a>
+                                            </span>
+                                            <span data-toggle="popover" data-trigger="hover" data-html="true"
+                                                  data-title="tik" data-content="İşlem Durumu">
+                                                <a @*data-toggle="modal" data-target="#gormodal"*@
+                                                   class="btn btn-success btn-sm">
+                                                    <i class="fa-solid fa-check"></i>
+                                                </a>
+                                            </span>
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>                
+            </div>        
+        </section>
+    </div>
+</section>
+
+
+<!-- /.content -->
+@*<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-whatever="@getbootstrap">Open modal for @getbootstrap</button>*@
+
+
+<div class="modal fade" id="gormodal" tabindex="-1" aria-labelledby="gormodalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="gormodalLabel">Mesaj</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Kapat">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <h3>Konu</h3>
+                <p id="modalKonu"></p>
+                <hr />
+                <h6>Hata alınan yer</h6>
+                <p id="modalUrlReferrer"></p>
+                <br />
+                <p>Mesaj</p>
+                <p id="modalMesaj"></p>
+                <hr />
+                <p>Oluşturan Kişi</p>
+                <p id="modalCreatedBy"></p>
+                <hr />
+                <p>Oluşturulduğu tarih</p>
+                <p id="modalCreated"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="cevapvermodal" tabindex="-1" aria-labelledby="cevapvermodalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cevapvermodalLabel">Yeni Mesaj</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            @using (Html.BeginForm("CevapVer", "Admin", FormMethod.Post, new { id = "formCevapVer" }))
+            {
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" name="Id" value="" />
+
+                <div class="modal-body">
+                    <div class="row" id="aliciBilgileri"></div>
+                    <div class="form-group">
+                        <label class="col-form-label">Eposta / SMS:</label>
+                        <select class="form-control" name="GonderimTipi">
+                            <option value="Eposta" selected>Eposta</option>
+                            <option value="SMS">SMS</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="recipient-name" class="col-form-label">Alıcı:</label>
+                        <input type="text" class="form-control" name="Kime" id="recipient-name">
+                    </div>
+                    <div class="form-group">
+                        <label for="message-text" class="col-form-label">Mesaj:</label>
+                        <textarea class="form-control" name="Mesaj" id="message-text"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Kapat</button>
+                    <button type="submit" class="btn btn-primary">Mesajı Gönder</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+
+
+@section css{
+
+    <!-- DataTables -->
+    <link rel="stylesheet" href="~/Public/DataTableBS4/datatables.min.css" />
+
+    <!-- Select2 -->
+    <link rel="stylesheet" href="~/Public/adminlte3/plugins/select2/css/select2.min.css">
+    <link rel="stylesheet" href="~/Public/adminlte3/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
+
+}
+
+@section js{
+    <!-- DataTables -->
+    <script type="text/javascript" src="~/Public/DataTableBS4/datatables.min.js"></script>
+
+    <script src="~/Public/adminlte3/plugins/select2/js/select2.full.min.js"></script>
+    <!-- PRİNT THİS -->
+    <script src="~/Public/areas/printThis.js"></script>
+
+    <!-- Input Mask -->
+    <script src="~/Public/adminlte3/plugins/moment/moment.min.js"></script>
+    <script src="~/Public/adminlte3/plugins/inputmask/jquery.inputmask.min.js"></script>
+
+    <script>
+        $(function () {
+            //Datemask dd/mm/yyyy
+            $('#datemask').inputmask('dd/mm/yyyy', { 'placeholder': 'dd/mm/yyyy' })
+            //Datemask2 mm/dd/yyyy
+            $('#datemask2').inputmask('mm/dd/yyyy', { 'placeholder': 'mm/dd/yyyy' })
+
+            $('[data-mask]').inputmask()
+        })
+    </script>
+
+    <script>
+        $(function () {
+
+            $(".cevapverdoldur").on("click", () => {
+                let Id = $(this).attr("data-Id");
+                let CreatedBy = $(this).attr("data-CreatedBy");
+                let Telefon = $(this).attr("data-Telefon");
+                let Eposta = $(this).attr("data-Eposta");
+
+                console.log(Id + CreatedBy + Telefon + Eposta);
+
+                $("#formCevapVer input[name=Id]").val(Id);
+                $("#aliciBilgileri").html("").append(CreatedBy + "-" + Telefon + "-" + Eposta);
+            });
+
+            $(".btnDuzenle").on("click", function () {
+                let personelId = $(this).attr("data-infopersonelId");
+                let infoAdSoyad = $(this).attr("data-infoAdSoyad");
+                let infoGorevYeri = $(this).attr("data-infoGorevYeri");
+                let infoGorev = $(this).attr("data-infoGorev");
+                let infoTelefon = $(this).attr("data-infoTelefon");
+                let infoEposta = $(this).attr("data-infoEposta");
+
+                $("#personelId").val(personelId);
+                $("#infoAdSoyad").html(infoAdSoyad);
+                $("#infoGorevYeri").html(infoGorevYeri);
+                $("#infoGorev").html(infoGorev);
+                $("#infoTelefon").html(infoTelefon);
+                $("#infoEposta").html(infoEposta);
+                $("#Telefon").val(infoTelefon);
+                $("#Eposta").val(infoEposta);
+            })
+
+            $(".gormodalButon").on('click', function () {
+                let UrlReferrer = $(this).attr("data-UrlReferrer");
+                let Konu = $(this).attr("data-Konu");
+                let Mesaj = $(this).attr("data-Mesaj");
+                let CreatedBy = $(this).attr("data-CreatedBy");
+                let Created = $(this).attr("data-Created");
+
+                $("#modalUrlReferrer").html('').append(UrlReferrer);
+                $("#modalKonu").html('').append(Konu);
+                $("#modalMesaj").html('').append(Mesaj);
+                $("#modalCreated").html('').append(Created);
+                $("#modalCreatedBy").html('').append(CreatedBy);
+            })
+        })
+    </script>
+
+    <!-- page script -->
+    <script>
+        $(function () {
+            $('#list').DataTable({
+                "paging": true,
+                "lengthChange": true,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "autoWidth": false,
+                "responsive": true,
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.21/i18n/Turkish.json"
+                },
+                "bStateSave": true,
+                "fnStateSave": function (oSettings, oData) {
+                    localStorage.setItem('DataTables_' + window.location.pathname, JSON.stringify(oData));
+                },
+                "fnStateLoad": function (oSettings) {
+                    return JSON.parse(localStorage.getItem('DataTables_' + window.location.pathname));
+                }
+            });
+
+            //Initialize Select2 Elements
+            $('.select2').select2()
+
+            //Initialize Select2 Elements
+            $('.select2bs4').select2({
+                theme: 'bootstrap4'
+            })
+        });
+    </script>
+
+}
